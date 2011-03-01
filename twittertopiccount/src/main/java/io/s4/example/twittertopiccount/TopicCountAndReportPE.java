@@ -59,9 +59,6 @@ public class TopicCountAndReportPE extends AbstractPE {
 
     @Override
     public void output() {
-        if (count < threshold) {
-            return;
-        }
         TopicSeen topicSeen = new TopicSeen((String) this.getKeyValue().get(0),
                                             count);
         topicSeen.setReportKey("1");

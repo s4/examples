@@ -26,6 +26,20 @@
       </includes>
     </fileSet>
     <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+	<include>*.sh</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>resources</outputDirectory>
+      <includes>
+        <include>*.png</include>
+      </includes>
+    </fileSet>
+    <fileSet>
       <directory>${project.basedir}/src/main/resources</directory>
       <outputDirectory />
       <includes>

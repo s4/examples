@@ -33,6 +33,10 @@ public class DirectToFilePersister implements Persister {
     public void setOutputFilename(String outputFilename) {
         this.outputFilename = outputFilename;
     }
+    
+    public String getOutputFilename() {
+        return outputFilename;
+    }
 
     @Override
     public int cleanOutGarbage() throws InterruptedException {
