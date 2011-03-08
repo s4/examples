@@ -4,7 +4,7 @@
   <groupId>io.s4.examples</groupId>
   <artifactId>twittertopiccount_scala</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.0.1</version>
+  <version>0.0.0.2</version>
   <name>twittertopiccount_scala</name>
   <url>http://maven.apache.org</url>
   <repositories>
@@ -58,8 +58,7 @@
     <dependency>
       <groupId>io.s4</groupId>
       <artifactId>s4_core</artifactId>
-      <version>0.2.1.0</version>
-      <scope>provided</scope>
+      <version>0.3.0.0</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
