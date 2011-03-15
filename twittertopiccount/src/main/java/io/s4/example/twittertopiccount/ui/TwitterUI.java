@@ -10,6 +10,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
 
 import javax.swing.JLabel;
 
@@ -25,6 +29,7 @@ public class TwitterUI extends javax.swing.JFrame {
     }
 
     int count = 0;
+    long timestamp = 1L;
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -38,6 +43,7 @@ public class TwitterUI extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(null);
@@ -50,7 +56,7 @@ public class TwitterUI extends javax.swing.JFrame {
     public void drawComponents(Object[][] tweets, long maxCount) {
 
         int y = 110;
-        int x1 = 90;
+        int x1 = 74;
         int x2 = 290;
 
         getContentPane().removeAll();
@@ -58,7 +64,11 @@ public class TwitterUI extends javax.swing.JFrame {
         jLabel1.setText("Top Twitter Topics");
         jLabel1.setFont(new Font("Times New Roman", Font.BOLD, 18));
         getContentPane().add(jLabel1);
-        jLabel1.setBounds(193, 40, 400, 25);
+        jLabel1.setBounds(193, 40, 200, 25);
+        jLabel4.setText("Timestamp: " + Long.toString(timestamp));
+        jLabel4.setFont(new Font("Times New Roman", Font.ITALIC, 9));
+        getContentPane().add(jLabel4);
+        jLabel4.setBounds(427,40,139,13);
         String path = System.getProperty("user.dir");
         String[] splitPath;
         splitPath = path.split("/bin");
@@ -129,8 +139,21 @@ public class TwitterUI extends javax.swing.JFrame {
                 });
             }
             getContentPane().add(jLabelTweet);
-            jLabelFrequency.setBounds(x2, y + (i * 40),
-                    (int) ((200 / maxCount) * count), 13);
+            if (maxCount != 0) {
+                int size = (int) ((250 / maxCount) * count);
+                if (size > countDigits(count) * 18) {
+                    jLabelFrequency.setBounds(x2, y + (i * 40),
+                            size, 13);                                    
+                }
+                else {
+                    jLabelFrequency.setBounds(x2, y + (i * 40),
+                            countDigits(count) * 18, 13);
+                }
+            }
+            else {
+                jLabelFrequency.setBounds(x2, y + (i * 40),
+                        20, 13);
+            }
             jLabelFrequency.setBackground(new java.awt.Color(246, 232, 252));
             jLabelFrequency.setForeground(new java.awt.Color(51, 0, 51));
             jLabelFrequency.setOpaque(true);
@@ -139,42 +162,60 @@ public class TwitterUI extends javax.swing.JFrame {
         getContentPane().repaint();
         getContentPane().setVisible(true);
     }
+    
+    public int countDigits(long count) {
+        int width = 0;
+        while (count > 1) {
+            count /= 10;
+            width++;
+        }
+        return width;
+    }
 
     public Object[][] readTopNTweets() {
-        Object[][] tweets = new Object[10][2];
+        Object[][] tweets = new Object [][] {{"", 0L}, {"", 0L},{"", 0L}, {"", 0L},{"", 0L}, {"", 0L},{"", 0L}, {"", 0L},{"", 0L}, {"", 0L},{"", 0L}, {"", 0L}};
         long maxCount = 0;
-        BufferedReader reader = null;
+        int size = 0;
+        Scanner scanner = null;
         try {
-            reader = new BufferedReader(new FileReader(new File(fileName)));
-            String line = reader.readLine();
-            JSONObject jsonObject = new JSONObject(line);
-            JSONArray jsonArray = jsonObject.getJSONArray("topN");
-            int numberOfTweets = jsonArray.length();
-            for (int i = 0; i < numberOfTweets; i++) {
-                JSONObject record = (JSONObject) jsonArray.get(i);
-                tweets[i][0] = record.getString("topic");
-                long count = record.getLong("count");
-                if (count > maxCount) {
-                    maxCount = count;
+            File file = new File(fileName);
+            if (timestamp < file.lastModified()/1000) {
+                timestamp = file.lastModified()/1000;
+            }
+            scanner = new Scanner(file);
+            if (scanner.hasNext()) {
+                String line = scanner.nextLine();
+                if ((line != null) && (line != "")) {
+                    JSONObject jsonObject = new JSONObject(line);
+                    JSONArray jsonArray = jsonObject.getJSONArray("topN");
+                    int numberOfTweets = jsonArray.length();
+                    for (int i = 0; i < numberOfTweets; i++) {
+                        JSONObject record = (JSONObject) jsonArray.get(i);
+                        tweets[i][0] = record.getString("topic");
+                        long count = record.getLong("count");
+                        if (count > maxCount) {
+                            maxCount = count;
+                        }
+                        String countString = Long.toString(record.getLong("count"));
+                        JLabel countLabel = new JLabel(countString);
+                        if (maxCount == 0) {
+                            size =400;                         
+                        }
+                        else {
+                            size = (int) ((400 / maxCount) * count);                            
+                        }
+                        countLabel.setSize(size, 29);
+                        countLabel.setBackground(new java.awt.Color(183, 123, 213));
+                        tweets[i][1] = record.getLong("count");
+                    }                
                 }
-                String countString = Long.toString(record.getLong("count"));
-                JLabel countLabel = new JLabel(countString);
-                countLabel.setSize((int) ((400 / maxCount) * count), 40);
-                countLabel.setBackground(new java.awt.Color(183, 123, 213));
-                tweets[i][1] = record.getLong("count");
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            scanner.close();
         }
         drawComponents(tweets, maxCount);
         return tweets;
@@ -196,7 +237,7 @@ public class TwitterUI extends javax.swing.JFrame {
                 }
             });
             try {
-                Thread.sleep(400);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -206,6 +247,7 @@ public class TwitterUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private String fileName;
 
 }
